@@ -72,7 +72,7 @@ class ReadSoustraction:
 
 
 	def _create_cmd(self):
-		cmd = ''
+		cmd = '#!/bin/bash\n'
 		cmd += self.params['bin']['bowtie'] + ' -p ' + str(self.n_cpu)
 		cmd += ' -x ' + self.db
 		cmd += ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' | '
