@@ -177,7 +177,7 @@ def _get_qsub_cmd(cluster=str, n_f=str, o_d=str, n_cpu=int, tc=int, blt_script=s
             str(n_cpu), blt_script]
         job_regex = '^Your job-array (\d+)\.1-\d+:\d+ \(\"blast_script\.sh\"\) has been submitted'
     elif cluster == 'genologin':
-        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1), '--ntasks-per-node=' + str(tc), '-D', o_d, '--mem=14G',
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1), '--ntasks-per-node=' + str(tc), '-D', o_d, '--mem=20G',
             '--ntasks=' + str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
         # job_regex = '^Waiting job array (\d+)'

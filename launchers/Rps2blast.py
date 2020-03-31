@@ -36,7 +36,8 @@ class Rps2blast:
 			exec_cmd = self._get_exec_script()
 			cluster_cmd = self._get_clust_script()
 		if self.server != 'enki':
-			cmd = 'scp ' + self.bcontigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
+			cmd = '#!/bin/bash\n'
+			cmd += 'scp ' + self.bcontigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
 			cmd += ':' + self.params['servers'][self.server]['scratch']
 			log.debug(cmd)
 			self.cmd.append(cmd)
@@ -112,6 +113,8 @@ class Rps2blast:
 		if self.server != 'enki':
 			if self.server == 'genouest':
 				ssh_cmd += '#!/bin/sh\n'
+			else:
+				ssh_cmd += '#!/bin/bash\n'
 			ssh_cmd += 'if [ -f ~/.bashrc ]; then' + "\n"
 			ssh_cmd += 'source ~/.bashrc' + "\n"
 			ssh_cmd += 'echo bashrc loaded' + "\n"
@@ -135,7 +138,7 @@ class Rps2blast:
 			if self.server == 'genotoul':
 				ssh_cmd += 'echo "'
 			if self.server == "genologin":
-				ssh_cmd += 'sbatch '
+				ssh_cmd += 'sbatch --mem=2G '
 			ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu ' + self.n_cpu
 			ssh_cmd += ' --tc ' + self.tc + ' -d ' + self.params['servers'][self.server]['db'][self.db]
 			if self.server != 'enki':

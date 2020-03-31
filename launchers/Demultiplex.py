@@ -117,7 +117,8 @@ class Demultiplex:
 		"""
 		Create command
 		"""
-		cmd = 'demultiplex.pl'
+		cmd = "#!/bin/bash\n"
+		cmd += 'demultiplex.pl'
 		if self.polyA:
 			cmd += ' -polyA'
 		if self.mid != '':

@@ -30,7 +30,8 @@ class Blast2ecsv:
 		"""
 		Create command
 		"""
-		cmd = 'blast2ecsv.pl'
+		cmd = '#!/bin/bash\n'
+		cmd += 'blast2ecsv.pl'
 		cmd += ' -t ' + self.type
 		cmd += ' -b ' + self.b
 		cmd += ' -if ' + self.in_format

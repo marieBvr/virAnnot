@@ -28,7 +28,8 @@ class Blast:
     def create_cmd(self):
         ssh_cmd = self._get_exec_script()
         if self.server != 'enki':
-            cmd = 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
+            cmd = '#!/bin/bash\n'
+            cmd += 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
             cmd += ':' + self.params['servers'][self.server]['scratch']
             log.debug(cmd)
             self.cmd.append(cmd)
@@ -73,17 +74,17 @@ class Blast:
             ssh_cmd += 'else' + "\n"
             ssh_cmd += 'echo "source not found."' + "\n"
             ssh_cmd += 'fi' + "\n"
-            if self.server == 'genouest':
-                ssh_cmd += '. /softs/local/env/envpython-3.6.3.sh' + "\n"
+            #if self.server == 'genouest':
+            #    ssh_cmd += '. /softs/local/env/envpython-3.6.3.sh' + "\n"
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + "\n"
             ssh_cmd += 'mkdir ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
             ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.contigs) + ' ' + self.out_dir + "\n"
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
 
         if self.server == 'genouest':
-            ssh_cmd += 'echo "'
+            ssh_cmd += 'srun --mem=2G '
         if self.server == "genologin":
-            ssh_cmd += 'sbatch '
+            ssh_cmd += 'sbatch --mem=2G '
         ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
         ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
         if self.server != 'enki':
@@ -93,9 +94,9 @@ class Blast:
         ssh_cmd += ' --prefix ' + self.out_dir
         ssh_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
         ssh_cmd += ' --max_target_seqs ' + self.max_target_seqs
-        if self.server == 'genouest':
-            ssh_cmd += '"'
-            ssh_cmd += ' | qsub -V -wd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + ' -N ' + self.sample
+        #if self.server == 'genouest':
+        #    ssh_cmd += '"'
+        #    ssh_cmd += ' | qsub -V -wd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + ' -N ' + self.sample
         return ssh_cmd
 
 
