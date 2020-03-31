@@ -24,8 +24,10 @@ class Blast:
             self.create_cmd()
 
 
-
     def create_cmd(self):
+        #
+        # Send contig files and scripts to cluster to execute command
+        #
         ssh_cmd = self._get_exec_script()
         if self.server != 'enki':
             cmd = '#!/bin/bash\n'
@@ -33,6 +35,12 @@ class Blast:
             cmd += ':' + self.params['servers'][self.server]['scratch']
             log.debug(cmd)
             self.cmd.append(cmd)
+            if self.server == 'genouest':
+                cmd = 'scp ' + self.genouest_cmd_file + ' ' + self.params['servers'][self.server]['username'] 
+                cmd += '@' + self.params['servers'][self.server]['adress']
+                cmd += ':' + self.params['servers'][self.server]['scratch']
+                log.debug(cmd)
+                self.cmd.append(cmd)
             fw = open(self.remote_cmd_file, mode='w')
             fw.write(ssh_cmd)
             fw.close()
@@ -59,6 +67,10 @@ class Blast:
 
 
     def _get_exec_script(self):
+        #
+        # Set cluster environment and launch blast_launch.py
+        # For genouest cluster, need an additional file
+        #
         ssh_cmd = ''
         if self.server != 'enki':
             ssh_cmd += 'if [ -f ~/.bashrc ]; then' + "\n"
@@ -74,30 +86,45 @@ class Blast:
             ssh_cmd += 'else' + "\n"
             ssh_cmd += 'echo "source not found."' + "\n"
             ssh_cmd += 'fi' + "\n"
-            #if self.server == 'genouest':
-            #    ssh_cmd += '. /softs/local/env/envpython-3.6.3.sh' + "\n"
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + "\n"
             ssh_cmd += 'mkdir ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
             ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.contigs) + ' ' + self.out_dir + "\n"
+            ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.genouest_cmd_file) + ' ' + self.out_dir + "\n"
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
 
         if self.server == 'genouest':
-            ssh_cmd += 'srun --mem=2G '
-        if self.server == "genologin":
-            ssh_cmd += 'sbatch --mem=2G '
-        ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
-        ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
-        if self.server != 'enki':
-            ssh_cmd += ' -s ' + os.path.basename(self.contigs)
+            self._create_genouest_script()
+            ssh_cmd += 'sbatch ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir
+            ssh_cmd += '/' + os.path.basename(self.genouest_cmd_file)
         else:
-            ssh_cmd += ' -s ' + self.contigs
-        ssh_cmd += ' --prefix ' + self.out_dir
-        ssh_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
-        ssh_cmd += ' --max_target_seqs ' + self.max_target_seqs
-        #if self.server == 'genouest':
-        #    ssh_cmd += '"'
-        #    ssh_cmd += ' | qsub -V -wd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + ' -N ' + self.sample
+            if self.server == "genologin":
+                ssh_cmd += 'sbatch --mem=2G '
+            ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
+            ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
+            if self.server != 'enki':
+                ssh_cmd += ' -s ' + os.path.basename(self.contigs)
+            else:
+                ssh_cmd += ' -s ' + self.contigs
+            ssh_cmd += ' --prefix ' + self.out_dir
+            ssh_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
+            ssh_cmd += ' --max_target_seqs ' + self.max_target_seqs
         return ssh_cmd
+
+    def _create_genouest_script(self):
+        #
+        # Create cmd file to launch blast_launch.py on genouest cluster
+        #
+        go_cmd = '#!/bin/bash' + "\n"
+        go_cmd += '. /local/env/envconda.sh' + "\n"
+        go_cmd += 'conda activate ~/blast_env' + "\n"
+        go_cmd += 'python3.6 blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
+        go_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db] + ' -s ' + os.path.basename(self.contigs)
+        go_cmd += ' --prefix ' + self.out_dir
+        go_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
+        go_cmd += ' --max_target_seqs ' + self.max_target_seqs
+        fw = open(self.genouest_cmd_file, mode='w')
+        fw.write(go_cmd)
+        fw.close()
 
 
     def check_args(self, args=dict):
@@ -156,5 +183,6 @@ class Blast:
             log.critical('You must provide a database name.')
         self.cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_blast_cmd.txt'
         self.remote_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_remote_blast_cmd.txt'
+        self.genouest_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_genouest_cmd.txt'
         self.random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
         self.out_dir = self.random_string + '_' + self.sample + '_' + self.type

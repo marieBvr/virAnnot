@@ -128,7 +128,7 @@ def _get_qstat_cmd(cluster=str, jobid=int) :
     elif cluster == 'genologin':
         qstat_cmd = ['squeue', '-j',str(jobid)]
     elif cluster == 'genouest':
-        qstat_cmd = ['qstat', '-j',str(jobid)]
+        qstat_cmd = ['squeue', '-j',str(jobid)]
     elif cluster == 'curta':
         qstat_cmd = ['qstat', '-i',str(jobid)]
     else:
@@ -173,9 +173,9 @@ def _get_qsub_cmd(cluster=str, n_f=str, o_d=str, n_cpu=int, tc=int, blt_script=s
         # qsub_cmd = 'qsub -V -t 1-' + str(n_f+1) + ' -d ' + o_d + ' -l walltime=18:00:00 -l nodes=1:ppn=' + str(n_cpu) + ' ' + blt_script
         job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genouest':
-        qsub_cmd = ['qsub', '-V', '-t', '1-' + str(n_f+1), '-tc', str(tc), '-wd', o_d,'-l', 'mem=8G', '-l', 'h_vmem=12G', '-pe', 'parallel_smp',
-            str(n_cpu), blt_script]
-        job_regex = '^Your job-array (\d+)\.1-\d+:\d+ \(\"blast_script\.sh\"\) has been submitted'
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1), '--ntasks-per-node=' + str(tc), '-D', o_d, '--mem=20G',
+            '--ntasks=' + str(n_cpu), blt_script]
+        job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genologin':
         qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1), '--ntasks-per-node=' + str(tc), '-D', o_d, '--mem=20G',
             '--ntasks=' + str(n_cpu), blt_script]
