@@ -242,9 +242,7 @@ def _load_script(cluster, prog):
         script_sge = "#!/bin/sh\n%s -query %s/group_$SGE_TASK_ID.fa -db %s -out %s/group_$SGE_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
     elif cluster == 'genouest':
         script_sge = "#!/bin/sh\n"
-        script_sge += ".  /softs/local/env/envblast-2.6.0.sh\n"
-        script_sge += ". /softs/local/env/envpython-3.6.3.sh\n"
-        script_sge += "%s -query %s/group_$SGE_TASK_ID.fa -db %s -out %s/group_$SGE_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
+        script_sge += "%s -query %s/group_$SLURM_ARRAY_TASK_ID.fa -db %s -out %s/group_$SLURM_ARRAY_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
     elif cluster == 'genologin':
         script_sge = "#!/bin/sh\n%s -query %s/group_$SLURM_ARRAY_TASK_ID.fa -db %s -out %s/group_$SLURM_ARRAY_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
     elif  cluster == 'curta':
