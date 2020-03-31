@@ -36,7 +36,7 @@ class Blast:
             log.debug(cmd)
             self.cmd.append(cmd)
             if self.server == 'genouest':
-                cmd = 'scp ' + self.genouest_cmd_file + ' ' + self.params['servers'][self.server]['username'] 
+                cmd = 'scp ' + self.genouest_cmd_file + ' ' + self.params['servers'][self.server]['username']
                 cmd += '@' + self.params['servers'][self.server]['adress']
                 cmd += ':' + self.params['servers'][self.server]['scratch']
                 log.debug(cmd)
@@ -89,7 +89,8 @@ class Blast:
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + "\n"
             ssh_cmd += 'mkdir ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
             ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.contigs) + ' ' + self.out_dir + "\n"
-            ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.genouest_cmd_file) + ' ' + self.out_dir + "\n"
+            if self.server == 'genouest':
+                ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.genouest_cmd_file) + ' ' + self.out_dir + "\n"
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
 
         if self.server == 'genouest':
@@ -110,6 +111,7 @@ class Blast:
             ssh_cmd += ' --max_target_seqs ' + self.max_target_seqs
         return ssh_cmd
 
+
     def _create_genouest_script(self):
         #
         # Create cmd file to launch blast_launch.py on genouest cluster
@@ -117,7 +119,7 @@ class Blast:
         go_cmd = '#!/bin/bash' + "\n"
         go_cmd += '. /local/env/envconda.sh' + "\n"
         go_cmd += 'conda activate ~/blast_env' + "\n"
-        go_cmd += 'python3.6 blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
+        go_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
         go_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db] + ' -s ' + os.path.basename(self.contigs)
         go_cmd += ' --prefix ' + self.out_dir
         go_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
