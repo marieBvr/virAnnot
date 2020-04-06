@@ -28,7 +28,7 @@ class Blast:
         #
         # Send contig files and scripts to cluster to execute command
         #
-        ssh_cmd = self._get_exec_script()
+        ssh_cmd = self.get_exec_script()
         if self.server != 'enki':
             cmd = '#!/bin/bash\n'
             cmd += 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
@@ -66,12 +66,13 @@ class Blast:
             self.cmd.append(ssh_cmd)
 
 
-    def _get_exec_script(self):
+    def get_exec_script(self):
         #
         # Set cluster environment and launch blast_launch.py
         # For genouest cluster, need an additional file
         #
         ssh_cmd = ''
+        log.info("get exec")
         if self.server != 'enki':
             ssh_cmd += 'if [ -f ~/.bashrc ]; then' + "\n"
             ssh_cmd += 'source ~/.bashrc' + "\n"
@@ -94,7 +95,7 @@ class Blast:
             ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
 
         if self.server == 'genouest':
-            self._create_genouest_script()
+            self.create_genouest_script()
             ssh_cmd += 'sbatch ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir
             ssh_cmd += '/' + os.path.basename(self.genouest_cmd_file)
         else:
@@ -112,7 +113,7 @@ class Blast:
         return ssh_cmd
 
 
-    def _create_genouest_script(self):
+    def create_genouest_script(self):
         #
         # Create cmd file to launch blast_launch.py on genouest cluster
         #
