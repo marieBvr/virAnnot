@@ -299,6 +299,7 @@ sub retrieveTaxIdFromAcc {
     $type = 'nucl_accession2taxid';
   }
   my $NameQuery = 'SELECT taxid FROM ' . $type . ' WHERE accession="' . $acc . '"';
+  #my $NameQuery = 'SELECT taxid FROM ' . $type . ' WHERE accession="' . $acc . '"';
   $logger->debug($NameQuery);
   my $sth=$self->{dbh}->prepare($NameQuery);
   $sth->execute();
