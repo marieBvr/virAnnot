@@ -16,7 +16,7 @@ my $VERSION = '1.2' ;
 my $lastmodif = '2015-10-27' ;
 
 my %blastOptions;
-my $db = '/media/data/db/taxonomy/taxonomy.sqlite';
+my $db = '/media/scratch/taxo/taxonomy.tmp.sqlite';
 my $dbType = 'ncbi';
 my $verbosity = 1;
 my $parseMethod = 'global';
@@ -239,26 +239,28 @@ sub printCSVExcel {
       my @fields;
       foreach my $field (@$headers){
         if($field eq 'sequence' && !defined($already_printed_sequences->{$line->{'query_id'}})){
-					if($self->{_print_only_virus_seq} == 1){
-						if($line->{'taxonomy'} =~ /Virus/ || $line->{'taxonomy'} =~ /Viroid/){
-							push(@fields, '"' . $self->{fasta_tool}->retrieveFastaSequence($line->{'query_id'})->{$line->{'query_id'}} . '"');
-							$already_printed_sequences->{$line->{'query_id'}}=1;
-						}
+          if($self->{_print_only_virus_seq} == 1){
+            if($line->{'taxonomy'} =~ /Virus/ || $line->{'taxonomy'} =~ /Viroid/){
+              #$logger->debug(ref($line->{'query_id'}));
+              #if("$line->{'query_id'}" == "No"){next;}
+              push(@fields, '"' . $self->{fasta_tool}->retrieveFastaSequence($line->{'query_id'})->{$line->{'query_id'}} . '"');
+              $already_printed_sequences->{$line->{'query_id'}}=1;
+            }
             else{
               push(@fields, '""');
-							$already_printed_sequences->{$line->{'query_id'}}=1;
+              $already_printed_sequences->{$line->{'query_id'}}=1;
             }
-					}
-					else{
+          }
+          else{
             if(length($self->{fasta_tool}->retrieveFastaSequence($line->{'query_id'})->{$line->{'query_id'}})>= 1){
               push(@fields, '"' . $self->{fasta_tool}->retrieveFastaSequence($line->{'query_id'})->{$line->{'query_id'}} . '"');
               $already_printed_sequences->{$line->{'query_id'}}=1;
             }
             else{
               push(@fields, '""');
-							$already_printed_sequences->{$line->{'query_id'}}=1;
+              $already_printed_sequences->{$line->{'query_id'}}=1;
             }
-					}
+          }
         }
         elsif($field eq 'nb_reads'){
           my $query_id = join( "", split("_d2b", $line->{'query_id'}) );
