@@ -172,11 +172,11 @@ def _get_qsub_cmd(cluster=str, n_f=str, o_d=str, n_cpu=int, tc=int, mem=int, blt
         '--mem=' + str(mem) + 'G', '--nodes=1 --cpus-per-task=', str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genouest':
-        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%50' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%10' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
         '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genologin':
-        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%50' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%20' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
         '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
         # job_regex = '^Waiting job array (\d+)'
