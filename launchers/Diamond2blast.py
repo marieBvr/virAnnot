@@ -15,6 +15,7 @@ import logging as log
 import random
 import string
 import re
+from Blast import Blast
 
 
 class Diamond2blast:
@@ -31,98 +32,16 @@ class Diamond2blast:
 		self.cmd = []
 		self.ssh_cmd = []
 		if self.execution == 1:
-			self.create_cmd()
+			Blast.create_cmd(self)
 
 
-	def create_cmd(self):
-		"""
-		Create command
-		"""
-		ssh_cmd = self._get_env_script()
-		if self.server == 'genouest':
-			exec_cmd = self._get_exec_script()
-			cluster_cmd = self._get_clust_script()
-		if self.server != 'enki':
-			cmd = '#!/bin/bash\n'
-			cmd += 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
-			cmd += ':' + self.params['servers'][self.server]['scratch']
-			log.debug(cmd)
-			self.cmd.append(cmd)
-			fw = open(self.remote_cmd_file, mode='w')
-			fw.write(ssh_cmd)
-			fw.close()
-			if self.server == 'genouest':
-				fw = open(self.cluster_cmd_file, mode='w')
-				fw.write(cluster_cmd)
-				fw.close()
-				fw = open(self.cluster_exec_cmd_file, mode='w')
-				fw.write(exec_cmd)
-				fw.close()
-				cmd = 'ssh ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress'] + ' \'bash -s\' < '
-				cmd += self.remote_cmd_file
-				log.debug(cmd)
-				self.cmd.append(cmd)
-				cmd = 'scp ' + self.cluster_cmd_file + ' ' + self.params['servers'][self.server]['username']  + '@'
-				cmd += self.params['servers'][self.server]['adress'] + ':' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir
-				log.debug(cmd)
-				self.cmd.append(cmd)
-				cmd = 'ssh ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
-				cmd += ' \'bash -s\' < ' + self.cluster_exec_cmd_file
-				log.debug(cmd)
-				self.cmd.append(cmd)
-			else:
-				cmd = 'ssh ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
-				cmd += ' \'bash -s\' < ' + self.remote_cmd_file
-				log.debug(cmd)
-				self.cmd.append(cmd)
-
-			cmd = 'scp ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress'] + ':'
-			cmd += self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + '/' + os.path.basename(self.out) + ' ' + self.wd
-			log.debug(cmd)
-			self.cmd.append(cmd)
-		elif self.server == 'enki':
-			self.cmd.append(ssh_cmd)
-
-
-	def _get_exec_script(self):
-		"""
-		Script executed only on Genouest cluster
-		"""
-		exec_cmd = ''
-		# exec_cmd += 'export SGE_ROOT="/usr/local/sge"\n'
-		exec_cmd += '. /etc/profile.d/sge.sh\n'
-		exec_cmd += 'echo "./' + os.path.basename(self.cluster_cmd_file)
-		exec_cmd += '" | qsub -sync yes -V -wd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + ' -N ' + self.sample
-		return exec_cmd
-
-
-	def _get_clust_script(self):
-		"""
-		Script executed only on Genouest cluster
-		"""
-		clust_cmd = '. /softs/local/env/envpython-3.6.3.sh \n'
-		clust_cmd += '. /softs/local/env/envblast-2.6.0.sh \n'
-		clust_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + '/' + '\n'
-		clust_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu ' + self.n_cpu + ' --tc ' + self.tc
-		clust_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
-		clust_cmd += ' -s ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + '/' + os.path.basename(self.contigs)
-		clust_cmd += ' --prefix ' + self.out_dir + ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
-		clust_cmd += ' --max_target_seqs ' + self.max_target_seqs
-		return clust_cmd
-
-
-	def _get_env_script(self):
-		"""
-		This file must be in the cluster environment
-		Depending on the cluster used, it load the
-		correct environment and run the job command
-		"""
+	def get_exec_script(self):
+		#
+		# Set cluster environment and launch blast_launch.py
+		# For genouest cluster, need an additional file
+		#
 		ssh_cmd = ''
 		if self.server != 'enki':
-			if self.server == 'genouest':
-				ssh_cmd += '#!/bin/sh\n'
-			else:
-				ssh_cmd = '#!/bin/bash\n'
 			ssh_cmd += 'if [ -f ~/.bashrc ]; then' + "\n"
 			ssh_cmd += 'source ~/.bashrc' + "\n"
 			ssh_cmd += 'echo bashrc loaded' + "\n"
@@ -136,31 +55,33 @@ class Diamond2blast:
 			ssh_cmd += 'else' + "\n"
 			ssh_cmd += 'echo "source not found."' + "\n"
 			ssh_cmd += 'fi' + "\n"
-			if self.server == 'avakas':
-				ssh_cmd += 'source ~/.bashrc' + "\n"
 			ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + "\n"
 			ssh_cmd += 'mkdir ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
 			ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.contigs) + ' ' + self.out_dir + "\n"
+			if self.server == 'genouest':
+				ssh_cmd += 'mv ' + self.params['servers'][self.server]['scratch'] + '/' + os.path.basename(self.genouest_cmd_file) + ' ' + self.out_dir + "\n"
 			ssh_cmd += 'cd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + "\n"
-		if self.server != 'genouest':
-			if self.server == 'genotoul':
-				ssh_cmd += 'echo "'
+		if self.server == 'genouest':
+			self.create_genouest_script()
+			ssh_cmd += 'sbatch ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir
+			ssh_cmd += '/' + os.path.basename(self.genouest_cmd_file)
+		else:
 			if self.server == "genologin":
-				ssh_cmd += 'sbatch --mem=20G '
+				ssh_cmd += 'sbatch --mem=2G '
 			ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu ' + self.n_cpu + ' --tc ' + self.tc
 			ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
 			if self.server != 'enki':
 				ssh_cmd += ' -s ' + os.path.basename(self.contigs)
 			else:
 				ssh_cmd += ' -s ' + self.contigs
-
 			ssh_cmd += ' --prefix ' + self.out_dir
 			ssh_cmd += ' -p ' + self.type + ' -o ' + os.path.basename(self.out) + ' -r ' + ' --outfmt 5'
 			ssh_cmd += ' --max_target_seqs ' + self.max_target_seqs
-			if self.server == 'genotoul':
-				ssh_cmd += '"'
-				ssh_cmd += ' | qsub -sync yes -V -wd ' + self.params['servers'][self.server]['scratch'] + '/' + self.out_dir + ' -N ' + self.sample
 		return ssh_cmd
+
+
+	def create_genouest_script(self):
+		Blast.create_genouest_script(self)
 
 
 	def csv_to_fasta(self):
@@ -262,9 +183,10 @@ class Diamond2blast:
 				self.db = args['db']
 		else:
 			log.critical('You must provide a database name.')
+
 		self.cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_d2b_cmd.txt'
 		self.remote_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_remote_d2b_cmd.txt'
-		self.cluster_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_cluster_d2b_cmd.sh'
-		self.cluster_exec_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_exec_d2b_cmd.sh'
+		self.genouest_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_genouest_d2b_cmd.txt'
 		self.random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
 		self.out_dir = self.random_string + '_' + self.sample + '_' + self.type
+
