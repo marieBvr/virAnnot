@@ -56,7 +56,7 @@ class Blast2ecsv:
 			cmd += ' -hov ' + self.hov
 		if self.identity != 0:
 			cmd += ' -identity ' + self.identity
-		if self.pd:
+		if self.pd == True:
 			cmd += ' -pd '
 		log.debug(cmd)
 		self.cmd.append(cmd)
@@ -161,4 +161,8 @@ class Blast2ecsv:
 			self.hov = str(args['hov'])
 		else:
 			self.hov = '0'
-		self.pd = 'pd' in args
+		if 'pd' in args:
+			self.pd = args['pd']
+		else:
+			self.pd = False
+

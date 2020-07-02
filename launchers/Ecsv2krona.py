@@ -31,7 +31,8 @@ class Ecsv2krona:
 		"""
 		Create command
 		"""
-		cmd = 'ecsv2krona.pl'
+		cmd = '#!/bin/bash\n'
+		cmd += 'ecsv2krona.pl'
 		cmd += ' -data ' + self.data
 		if self.r:
 			cmd += ' -r '

@@ -25,7 +25,8 @@ class Automapper:
 		"""
 		Generate command that will be ran
 		"""
-		cmd = 'autoMapper.pl'
+		cmd = '#!/bin/bash\n'
+		cmd += 'autoMapper.pl'
 		cmd += ' -r ' + self.ref
 		cmd += ' -q ' + self.contigs
 		cmd += ' -b ' + self.ecsv
