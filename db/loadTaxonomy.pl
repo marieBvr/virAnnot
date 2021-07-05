@@ -28,6 +28,8 @@ GetOptions(
   "acc_prot=s" => \$data_acc_prot,
   "acc_wgs=s"=> \$data_acc_wgs,
   "acc_nucl=s"=> \$data_acc_nucl,
+  "dead_prot=s"=> \$data_dead_acc_prot,
+  "dead_nucl=s"=> \$data_dead_acc_nucl,
   # "gi_nucl=s" => \$gi_nucl,
   "gi_prot=s" => \$gi_prot,
   "names=s"  => \$data_names,
@@ -246,27 +248,28 @@ sub _set_options {
 }
 
 
-sub help {
-my $prog = basename($0);
-print STDERR <<EOF ;
-#### $prog ####
-#
-# AUTHOR:     Sebastien THEIL and Marie LEFEBVRE
-# LAST MODIF: 07/02/2020
-# PURPOSE:    This script is used to load NCBI taxonomy file into a SQLite database.
+  sub help {
+    my $prog = basename($0);
+    print STDERR <<EOF ;
+    #### $prog ####
+    #
+    # AUTHOR:     Sebastien THEIL and Marie LEFEBVRE
+    # LAST MODIF: 07/02/2020
+    # PURPOSE:    This script is used to load NCBI taxonomy file into a SQLite database.
 
-USAGE:
-      $prog -struct taxonomyStructure.sql -index taxonomyIndex.sql -acc_prot acc2taxid.prot -acc_nucl acc2taxid.nucl -names names.dmp -nodes nodes.dmp -gi_nucl gi_taxid_nucl.dmp -gi_prot gi_taxid_prot.dmp
+    USAGE:
+          $prog -struct taxonomyStructure.sql -index taxonomyIndex.sql -acc_prot acc2taxid.prot -acc_nucl acc2taxid.nucl -names names.dmp -nodes nodes.dmp -gi_nucl gi_taxid_nucl.dmp -gi_prot gi_taxid_prot.dmp
 
-      ### OPTIONS ###
-      -struct     <path>   taxonomyStructure.sql path. (Default: $taxo_struct_dmp)
-      -index      <path>   taxonomyIndex.sql path. (Default: $taxo_index_dmp)
-      -acc_prot   <path>   prot.accession2taxid. (Default: $data_acc_prot)
-      -acc_nucl   <path>   nucl.accession2taxid. (Default: $data_acc_wgs)
-      -names      <path>   names.dmp file. (Default: $data_names)
-      -nodes      <path>   nodes.dmp file. (Default: $data_nodes)
-      -gi_prot    <path>   gi_taxid_prot.dmp file (Default: $gi_prot)
-      -v          <int>      Verbosity level. (0 -> 4).
-EOF
-exit(1);
+          ### OPTIONS ###
+          -struct     <path>   taxonomyStructure.sql path. (Default: $taxo_struct_dmp)
+          -index      <path>   taxonomyIndex.sql path. (Default: $taxo_index_dmp)
+          -acc_prot   <path>   prot.accession2taxid. (Default: $data_acc_prot)
+          -acc_nucl   <path>   nucl.accession2taxid. (Default: $data_acc_wgs)
+          -names      <path>   names.dmp file. (Default: $data_names)
+          -nodes      <path>   nodes.dmp file. (Default: $data_nodes)
+          -gi_prot    <path>   gi_taxid_prot.dmp file (Default: $gi_prot)
+          -v          <int>      Verbosity level. (0 -> 4).
+    EOF
+    exit(1);
+  }
 }
