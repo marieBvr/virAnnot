@@ -63,8 +63,10 @@ class Assembly:
 		self.i2 = self.check_fastq_format(self.i2)
 		if self.ising != '':
 			self.ising = self.check_fastq_format(self.ising)
+		merged_read = os.path.basename(self.i1).split('_')[0] + '_merged.fa'
 		cmd = '#!/bin/bash\n'
-		cmd += 'metaspades.py' + ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' -o ' + self.wd + '/' + self.sample + '_spades'
+		cmd += '#SBATCH --ntasks-per-node=' + self.n_cpu + '\n'
+		cmd += 'metaspades.py' + ' -t ' + self.n_cpu + ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' -o ' + self.wd + '/' + self.sample + '_spades'
 		if self.ising != '':
 			cmd += ' -s ' + self.ising
 		log.debug(cmd)
