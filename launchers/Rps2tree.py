@@ -29,7 +29,8 @@ class Rps2tree:
 		"""
 		Create command
 		"""
-		cmd = 'rps2tree.pl'
+		cmd = '#!/bin/sh\n'
+		cmd += 'rps2tree.pl'
 		if self.iter == 'global':
 			for s_id in self.blast_files:
 				cmd += ' -id ' + self.blast_files[s_id]['id']
