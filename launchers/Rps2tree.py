@@ -30,25 +30,20 @@ class Rps2tree:
 		Create command
 		"""
 		cmd = '#!/bin/sh\n'
-		cmd += 'rps2tree.pl'
+		cmd += 'rps2tree.py'
 		if self.iter == 'global':
 			for s_id in self.blast_files:
-				cmd += ' -id ' + self.blast_files[s_id]['id']
-				cmd += ' -s ' + self.blast_files[s_id]['contigs']
-				cmd += ' -i ' + self.blast_files[s_id]['pfam']
-				cmd += ' -e ' + self.blast_files[s_id]['ecsv']
-				cmd += ' -rn ' + self.blast_files[s_id]['rn']
+				cmd += ' -f ' + self.blast_files[s_id]['contigs']
+				cmd += ' -r ' + self.blast_files[s_id]['pfam']
+				cmd += ' -b ' + self.blast_files[s_id]['blast']
+				cmd += ' -c ' + self.blast_files[s_id]['rn']
 		else:
 			log.debug('msg')
 			sys.exit(0)
-		cmd += ' -mp ' + str(self.min_prot)
+		cmd += ' -mpl ' + str(self.min_prot)
 		cmd += ' -vp ' + str(self.viral_portion)
-		cmd += ' -perc ' + str(self.perc)
+		cmd += ' -p ' + str(self.perc)
 		cmd += ' -o ' + self.out
-		if self.blast_db != '':
-			cmd += ' --blast_db ' + self.params['servers']['enki']['db'][self.blast_db]
-		if self.blast_type != '':
-			cmd += ' --blast_type ' + self.blast_type
 		log.debug(cmd)
 		self.cmd.append(cmd)
 
@@ -77,40 +72,19 @@ class Rps2tree:
 			self.perc = args['perc']
 		if 'min_prot' in args:
 			self.min_prot = args['min_prot']
-		if 'blast_db' in args:
-			self.blast_db = args['blast_db']
-		else:
-			self.blast_db = 'nr'
-		if 'blast_type' in args:
-			self.blast_type = args['blast_type']
-		else:
-			self.blast_type = 'blastx'
 		if 'iter' in args:
 			if args['iter'] == 'global':
 				self.iter = 'global'
 				self.blast_files = {}
 				for s_id in args['args']:
 					if s_id not in self.blast_files:
-						if os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['pfam']) and os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['ecsv']) and os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['contigs']):
+						if os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['pfam']) and os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['blast']) and os.path.exists(self.wd + '/' + s_id + '/' + args['args'][s_id]['contigs']):
 							self.blast_files[s_id] = {}
 							self.blast_files[s_id]['pfam'] = self.wd + '/' + s_id + '/' + args['args'][s_id]['pfam']
-							self.blast_files[s_id]['ecsv'] = self.wd + '/' + s_id + '/' + args['args'][s_id]['ecsv']
+							self.blast_files[s_id]['blast'] = self.wd + '/' + s_id + '/' + args['args'][s_id]['blast']
 							self.blast_files[s_id]['contigs'] = self.wd + '/' + s_id + '/' + args['args'][s_id]['contigs']
 							self.blast_files[s_id]['rn'] = self.wd + '/' + s_id + '/' + args['args'][s_id]['rn']
-							self.blast_files[s_id]['id'] = args['args'][s_id]['id']
 		else:
 			log.critical('No iter parameters.')
 		if len(self.blast_files.keys()) == 0:
-			self.execution = 0
-
-
-	def _check_file(self, input_file):
-		"""
-		Verify that file exists
-		"""
-		try:
-			open(input_file)
-			return input_file
-		except IOError:
-			print('File not found ' + input_file)
 			self.execution = 0
