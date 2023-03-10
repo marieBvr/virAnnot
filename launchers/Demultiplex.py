@@ -118,6 +118,7 @@ class Demultiplex:
 		Create command
 		"""
 		cmd = "#!/bin/bash\n"
+		cmd += "#SBATCH --mem=10G\n"
 		cmd += 'demultiplex.pl'
 		if self.polyA:
 			cmd += ' -polyA'

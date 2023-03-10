@@ -24,6 +24,7 @@ class ReadSoustraction:
 		"""
 		Check if arguments are valid
 		"""
+		log.info("Checking parameters...")
 		self.wd = os.getcwd()
 		self.params = args['params']
 		self.cmd = []
@@ -72,6 +73,7 @@ class ReadSoustraction:
 
 
 	def _create_cmd(self):
+		log.info("Creating bash command...")
 		cmd = '#!/bin/bash\n'
 		cmd += self.params['bin']['bowtie'] + ' -p ' + str(self.n_cpu)
 		cmd += ' -x ' + self.db

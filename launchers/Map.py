@@ -20,7 +20,9 @@ class Map:
 		"""
 		Create command
 		"""
-		cmd = '#!/bin/sh\n bowtie2-build ' + self.contigs + ' ' + self.contigs
+		cmd = '#!/bin/sh\n'
+		cmd += '#SBATCH --mem=15G\n'
+		cmd += 'bowtie2-build ' + self.contigs + ' ' + self.contigs
 		log.debug(cmd)
 		self.cmd.append(cmd)
 		cmd = 'bowtie2 -p ' + self.n_cpu + ' -x ' + self.contigs + ' -1 ' + self.i1 + ' -2 ' + self.i2

@@ -39,6 +39,7 @@ class Assembly:
 	def create_newbler_cmd(self):
 		if self.ising != '':
 			cmd = '#!/bin/bash\n'
+			cmd += '#SBATCH --mem=10G\n'
 			cmd += 'runAssembly -o ' + self.wd + '/' + self.sample + '_newbler '  + self.ising 
 			log.debug(cmd)
 			self.cmd.append(cmd)
@@ -65,6 +66,7 @@ class Assembly:
 			self.ising = self.check_fastq_format(self.ising)
 		merged_read = os.path.basename(self.i1).split('_')[0] + '_merged.fa'
 		cmd = '#!/bin/bash\n'
+		cmd += '#SBATCH --mem=10G\n'
 		cmd += '#SBATCH --ntasks-per-node=' + self.n_cpu + '\n'
 		cmd += 'metaspades.py' + ' -t ' + self.n_cpu + ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' -o ' + self.wd + '/' + self.sample + '_spades'
 		if self.ising != '':
