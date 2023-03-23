@@ -101,6 +101,8 @@ class Blast:
         else:
             if self.server == "genologin":
                 ssh_cmd += 'sbatch --mem=2G '
+            if self.server == "enki":
+                ssh_cmd += "#!/bin/sh\n"
             ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
             ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
             if self.server != 'enki':
