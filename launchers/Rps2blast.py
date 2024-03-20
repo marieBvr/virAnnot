@@ -28,7 +28,6 @@ class Rps2blast:
 			Blast.create_cmd(self)
 
 
-
 	def csv_to_fasta(self):
 		"""
 		From rps csv results
@@ -37,6 +36,7 @@ class Rps2blast:
 		fasta_file = self.icontigs # Input fasta file
 		wanted_file = self.i # Input interesting sequence IDs
 		result_file = self.bcontigs # Output fasta file
+
 		wanted = set()
 		with open(wanted_file) as f:
 			for line in f:
@@ -44,11 +44,13 @@ class Rps2blast:
 				query_length = line.strip().split("\t")[1]
 				if query_length != "no_hit":
 					wanted.add(query_id.replace("\"", "") )
+
 		fasta_sequences = SeqIO.parse(open(fasta_file),'fasta')
 		with open(result_file, "w") as f:
 			for seq in fasta_sequences:
 				if seq.id in wanted:
 					SeqIO.write([seq], f, "fasta")
+
 
 	def get_exec_script(self):
 		#
@@ -98,7 +100,6 @@ class Rps2blast:
 
 	def create_genouest_script(self):
 		Blast.create_genouest_script(self)
-
 
 	def check_args(self, args=dict):
 		"""
@@ -175,3 +176,4 @@ class Rps2blast:
 		self.genouest_cmd_file = self.wd + '/' + self.sample + '_' + self.type + '_' + self.db + '_genouest_rps2blast_cmd.txt'
 		self.random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
 		self.out_dir = self.random_string + '_' + self.sample + '_' + self.type
+

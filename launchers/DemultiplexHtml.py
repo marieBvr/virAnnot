@@ -28,7 +28,8 @@ class DemultiplexHtml:
 		"""
 		Create command
 		"""
-		cmd = 'demultiplex_html.py'
+		cmd = '#!/bin/sh\n'
+		cmd += 'demultiplex_html.py'
 		keys = sorted(self.lib)
 		for lib_name in keys:
 			cmd += ' -i ' + lib_name + ' -c ' + self.lib[lib_name]

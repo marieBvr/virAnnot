@@ -28,7 +28,8 @@ class Ecsv2excel:
 		"""
 		Create command
 		"""
-		cmd = 'ecsv2excel.pl'
+		cmd = '#!/bin/bash\n'
+		cmd += 'ecsv2excel.pl'
 		for bfile in self.blast_files:
 			cmd += ' -b ' + str(bfile)
 		if self.r != '':
@@ -72,7 +73,7 @@ class Ecsv2excel:
 			self.n_cpu = '1'
 
 
-	def _check_file(input_file):
+	def _check_file(self, input_file):
 		"""
 		Verify that file exists
 		"""

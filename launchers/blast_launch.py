@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import logging as log
 import re
@@ -22,7 +24,7 @@ def main():
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     num_files = _split_fasta(args.seq,args.chunk,out_dir,args.random)
-    jobid = _launch_jobs(num_files,out_dir,args.prefix,args.cluster,args.prog,args.db,args.n_cpu,args.tc,args.outfmt,args.max_target_seqs,args.mem)
+    jobid = _launch_jobs(num_files,out_dir,args.prefix,args.cluster,args.prog,args.db,args.n_cpu,args.tc,args.evalue,args.outfmt,args.max_target_seqs,args.mem)
     _wait_job(args.cluster,jobid)
     if args.outfmt == 5:
         _concat_xml(out_dir,args.out)
@@ -124,7 +126,7 @@ def _wait_job(cluster=str, jobid=int):
 def _get_qstat_cmd(cluster=str, jobid=int) :
     qstat_cmd = ''
     if cluster == 'enki':
-        qstat_cmd = ['qstat', '-j',str(jobid)]
+        qstat_cmd = ['squeue', '-j',str(jobid)]
     elif cluster == 'genologin':
         qstat_cmd = ['squeue', '-j',str(jobid)]
     elif cluster == 'genouest':
@@ -136,11 +138,11 @@ def _get_qstat_cmd(cluster=str, jobid=int) :
     return qstat_cmd
 
 
-def _launch_jobs(n_f, o_d, prefix, cluster, prog, db, n_cpu, tc, outfmt, max_target_seqs, mem):
+def _launch_jobs(n_f, o_d, prefix, cluster, prog, db, n_cpu, tc, evalue, outfmt, max_target_seqs, mem):
     script = _load_script(cluster,prog)
     blt_script = o_d + '/' + 'blast_script.sh'
     fw = open(blt_script, mode='w')
-    fw.write(script % (prog, o_d, db, o_d, 0.001, outfmt, max_target_seqs, n_cpu))
+    fw.write(script % (prog, o_d, db, o_d, evalue, outfmt, max_target_seqs, n_cpu))
     fw.close()
     qsub_cmd, job_regex = _get_qsub_cmd(cluster,n_f,o_d,n_cpu,tc,mem,blt_script)
     log.info(qsub_cmd)
@@ -164,19 +166,20 @@ def _get_qsub_cmd(cluster=str, n_f=str, o_d=str, n_cpu=int, tc=int, mem=int, blt
     qsub_cmd = ''
     job_regex = ''
     if cluster == 'enki':
-        qsub_cmd = ['qsub', '-V', '-t', '1-' + str(n_f+1), '-tc', str(tc), '-wd', o_d, '-pe', 'multithread', str(n_cpu), blt_script]
-        job_regex = '^Your job-array (\d+)\.1-\d+'
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1), '--ntasks-per-node=' + str(tc), '-D', o_d, 
+        '--cpus-per-task=' + str(n_cpu), blt_script]
+        job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'curta':
-        qsub_cmd = ['sbatch', '--export=ALL', '--array=1-' + str(n_f+1), '-D' , o_d, '--time=250:00:00',
-            '--mem=' + str(mem) + 'G', '--nodes=1 --ntasks=', str(n_cpu), blt_script]
+        qsub_cmd = ['sbatch', '--export=ALL', '--array=1-' + str(n_f+1), '-D' , o_d, '--time=250:00:00', 
+        '--mem=' + str(mem) + 'G', '--nodes=1 --cpus-per-task=', str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genouest':
-        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%10' , '--ntasks-per-node=' + str(tc), '-D', o_d,
-            '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%10' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
+        '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
     elif cluster == 'genologin':
-        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%50' , '--ntasks-per-node=' + str(tc), '-D', o_d,
-            '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
+        qsub_cmd = ['sbatch','--export=ALL', '--array=1-' + str(n_f+1) + '%20' , '--ntasks-per-node=' + str(tc), '-D', o_d, 
+        '--mem=' + str(mem) + 'G', '--cpus-per-task=' + str(n_cpu), blt_script]
         job_regex = '^Submitted batch job (\d+)'
         # job_regex = '^Waiting job array (\d+)'
 
@@ -219,13 +222,14 @@ def _set_options():
     parser.add_argument('-s','--seq',help='The fasta sequence file.',action='store',type=str,required=True)
     parser.add_argument('-c','--cluster',help='The cluster name.',action='store',type=str,required=True,default='avakas',choices=['enki','genologin','genouest', 'curta'])
     parser.add_argument('-n','--num_chunk',dest='chunk',help='The number of chunks to split the fasta in.',action='store',type=int,default=100)
-    parser.add_argument('--tc',dest='tc',help='The number of concurent jobs to launch on SGE servers.',action='store',type=int,default=100)
+    parser.add_argument('--tc',dest='tc',help='The number of concurent jobs to launch on SLURM servers.',action='store',type=int,default=100)
     parser.add_argument('--n_cpu',help='The number of cpu cores to use per job.',action='store',type=int,default=5)
     parser.add_argument('--mem',dest='mem',help='The number of memory to use per job in Go.',action='store',type=int,default=20)
     parser.add_argument('-p','--prog',help='The Blast program to use.',action='store',type=str,default='blastx',choices=['blastx','blastn','blastp','tblastx','rpstblastn'])
     parser.add_argument('-d','--db',help='The Blast database to use.',action='store',type=str,default='nr')
     parser.add_argument('-o','--out',help='Output XML file.',action='store',type=str,default='blast-out.xml')
     parser.add_argument('--outfmt',help='Output Blast format. 5: XML, 6: m8',action='store',type=int,default=5,choices=[5,6])
+    parser.add_argument('--evalue',help='Evalue of blast',action='store',type=int,default=0.001)
     parser.add_argument('--max_target_seqs',help='Maximum number of aligned sequences to keep.',action='store',type=int,default=5)
     parser.add_argument('--prefix',help='Directory prefix to store splited files.',action='store',type=str,default='split')
     parser.add_argument('--clean',help='Delete blast directory.',action='store_true')
@@ -238,7 +242,7 @@ def _set_options():
 def _load_script(cluster, prog):
     script_sge = ''
     if cluster == 'enki':
-        script_sge = "#!/bin/sh\n%s -query %s/group_$SGE_TASK_ID.fa -db %s -out %s/group_$SGE_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
+        script_sge = "#!/bin/sh\n%s -query %s/group_$SLURM_ARRAY_TASK_ID.fa -db %s -out %s/group_$SLURM_ARRAY_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"
     elif cluster == 'genouest':
         script_sge = "#!/bin/sh\n"
         script_sge += "%s -query %s/group_$SLURM_ARRAY_TASK_ID.fa -db %s -out %s/group_$SLURM_ARRAY_TASK_ID.xml -evalue %f -outfmt %d -max_target_seqs %d -parse_deflines -num_threads %i"

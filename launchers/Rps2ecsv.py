@@ -24,7 +24,8 @@ class Rps2ecsv:
 
 
     def create_cmd(self):
-        cmd = 'rps2ecsv.pl'
+        cmd = '#!/bin/sh\n'
+        cmd += 'rps2ecsv.py'
         cmd += ' -b ' + self.b
         cmd += ' -e ' + str(self.evalue)
         cmd += ' -o ' + self.out

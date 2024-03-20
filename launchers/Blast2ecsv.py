@@ -30,33 +30,20 @@ class Blast2ecsv:
 		"""
 		Create command
 		"""
-		cmd = 'blast2ecsv.pl'
-		cmd += ' -t ' + self.type
-		cmd += ' -b ' + self.b
-		cmd += ' -if ' + self.in_format
-		cmd += ' -e ' + str(self.evalue)
-		cmd += ' -pm ' + self.pm
-		if self.fhit:
-			cmd += ' -fhit '
-		if self.contigs != '':
-			cmd += ' -seq ' + self.contigs
-		if self.vs:
-			cmd += ' -vs '
-		if self.r:
-			cmd += ' -r '
+		cmd = '#!/bin/bash\n'
+		cmd += 'blast2ecsv.py'
+		cmd += ' -a ' + self.type # algo
+		cmd += ' -x ' + self.x # xml
+		cmd += ' -c ' + self.contigs # contigs
+		cmd += ' -me ' + self.evalue
 		cmd += ' -o ' + self.out
-		if self.rn != '':
-			cmd += ' -rn ' + self.rn
+		cmd += ' -rn ' + self.rn
 		if self.score != '':
 			cmd += ' -s ' + self.score
 		if self.qov != 0:
 			cmd += ' -qov ' + self.qov
 		if self.hov != 0:
-			cmd += ' -hov ' + self.hov
-		if self.identity != 0:
-			cmd += ' -identity ' + self.identity
-		if self.pd:
-			cmd += ' -pd '
+			cmd += ' -mhov ' + self.hov
 		log.debug(cmd)
 		self.cmd.append(cmd)
 
@@ -82,10 +69,6 @@ class Blast2ecsv:
 			self.wd = os.getcwd() + '/' + self.sample
 			self.iter = 'sample'
 			self.cmd_file = self.sample + '_b2e_cmd.txt'
-		if 'contigs' in args:
-			self.contigs = self.wd + '/' + args['contigs']
-		else:
-			self.contigs = ''
 		if 'sge' in args:
 			self.sge = bool(args['sge'])
 		else:
@@ -95,50 +78,38 @@ class Blast2ecsv:
 		if 'params' in args:
 			self.params = args['params']
 		if 'evalue' in args:
-			self.evalue = args['evalue']
-		else:
-			self.evalue = 0.0001
-		if 'fhit' in args:
-			self.fhit = bool(args['fhit'])
-		else:
-			self.fhit = False
-		if 'fhsp' in args:
-			self.fhit = bool(args['fhsp'])
-		else:
-			self.fhsp = False
-		if 'pm' in args:
-			self.pm = args['pm']
-		else:
-			self.pm = 'local'
-		if 'if' in args:
-			self.in_format = args['if']
-		else:
-			self.in_format = 'xml'
-		if 'r' in args:
-			self.r = bool(args['r'])
-		else:
-			self.r = False
-		if 'vs' in args:
-			self.vs = bool(args['vs'])
-		else:
-			self.vs = False
+			self.evalue = str(args['evalue'])
 		if 'n_cpu' in args:
 			self.n_cpu = str(args['n_cpu'])
 		else:
 			self.n_cpu = '1'
-		if 'b' in args:
-			if os.path.exists(self.wd + '/' + args['b']):
-				self.b = self.wd + '/' + args['b']
+		if 'contigs' in args:
+			if os.path.exists(self.wd + '/' + args['contigs']):
+				self.contigs = self.wd + '/' + args['contigs']
 			else:
-				self.b = ''
-				self.execution = 0
+				log.critical('Blast file does not exists')
+				sys.exit(1)
 		else:
-			log.critical('You must provide a blast file.')
+			log.critical('You must provide a fasta blast file.')
 			sys.exit(1)
 		if 'rn' in args:
-			self.rn = self.wd + '/' + args['rn']
+			if os.path.exists(self.wd + '/' + args['rn']):
+				self.rn = self.wd + '/' + args['rn']
+			else:
+				log.critical('RN file does not exists')
+				sys.exit(1)
 		else:
-			self.rn = ''
+			log.critical('You must provide a Read count file.')
+			sys.exit(1)
+		if 'xml' in args:
+			if os.path.exists(self.wd + '/' + args['xml']):
+				self.x = self.wd + '/' + args['xml']
+			else:
+				log.critical('XML file does not exists')
+				sys.exit(1)
+		else:
+			log.critical('You must provide a XML result blast file.')
+			sys.exit(1)
 		if 'type' in args:
 			self.type = args['type']
 		else:
@@ -148,10 +119,6 @@ class Blast2ecsv:
 			self.score = str(args['score'])
 		else:
 			self.score = '0'
-		if 'identity' in args:
-			self.identity = str(args['identity'])
-		else:
-			self.identity = '0'
 		if 'qov' in args:
 			self.qov = str(args['qov'])
 		else:
@@ -160,4 +127,4 @@ class Blast2ecsv:
 			self.hov = str(args['hov'])
 		else:
 			self.hov = '0'
-		self.pd = 'pd' in args
+

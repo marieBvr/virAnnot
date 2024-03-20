@@ -1,8 +1,5 @@
-#!/usr/bin/python3.4
-# to allow code to work with Python 2 and 3
-from __future__ import print_function   # print is a function in python3
-from __future__ import unicode_literals # avoid adding "u" to each string
-from __future__ import division # avoid writing float(x) when dividing by x
+#!/usr/bin/env python3.6
+###!/usr/bin/python3.6
 
 import argparse
 import logging as log
@@ -242,16 +239,16 @@ def _exec(module,name):
 		qsub_call=''
 		if hasattr(module,'iter'):
 			if module.iter == 'sample':
-				qsub_call = "qsub -wd " + module.wd + " -V -N " + module.sample + '_' + name + ' -pe multithread ' + module.n_cpu + ' ' + module.cmd_file
+				qsub_call = "sbatch -D " + module.wd + " --export=ALL -J " + module.sample + '_' + name + ' --ntasks=' + module.n_cpu + ' ' + module.cmd_file
 			elif module.iter == 'library':
-				qsub_call = "qsub -wd " + module.wd + " -V -N " + module.library + '_' + name + ' -pe multithread ' + module.n_cpu + ' ' + module.cmd_file
+				qsub_call = "sbatch -D " + module.wd + " --export=ALL -J " + module.library + '_' + name + ' --ntasks=' + module.n_cpu + ' ' + module.cmd_file
 			elif module.iter == 'global':
-				qsub_call = "qsub -wd " + module.wd + " -V -N " + name + ' -pe multithread ' + module.n_cpu + ' ' + module.cmd_file
+				qsub_call = "sbatch -D " + module.wd + " --export=ALL -J " + name + ' --ntasks=' + module.n_cpu + ' ' + module.cmd_file
 		else:
 			if name == 'Blast':
-				qsub_call = "qsub -wd " + module.wd + " -V -N " + module.sample + '_' + name + '_' + module.type + ' ' + module.cmd_file
+				qsub_call = "sbatch -D " + module.wd + " --export=ALL -J " + module.sample + '_' + name + '_' + module.type + ' ' + module.cmd_file
 			else:
-				qsub_call = qsub_call = "qsub -wd " + module.wd + " -V -N " + module.sample + '_' + name + ' ' + ' -pe multithread ' + module.n_cpu + ' ' + module.cmd_file
+				qsub_call = qsub_call = "sbatch -D " + module.wd + " --export=ALL -J " + module.sample + '_' + name + ' ' + ' --ntasks=' + module.n_cpu + ' ' + module.cmd_file
 		log.debug(qsub_call)
 		if log.getLogger().getEffectiveLevel() == 20:
 			os.system(qsub_call)

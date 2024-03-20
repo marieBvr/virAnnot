@@ -75,7 +75,7 @@ class Normalization:
 		"""
 		Create command
 		"""
-		cmd = ''
+		cmd = '#!/bin/bash\n'
 		cmd += self.params['bin']['seqtk'] + ' sample -s1000 ' + self.i1 + ' ' + str(self.num)
 		cmd += ' > ' + self.o1
 		log.debug(cmd)
@@ -95,5 +95,5 @@ class Normalization:
 			open(input_file)
 			return input_file
 		except IOError:
-			print ('File not found ' + input_file)
+			print('File not found ' + input_file)
 			self.execution = 0

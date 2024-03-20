@@ -24,14 +24,14 @@ class Blast:
             self.create_cmd()
 
 
-
     def create_cmd(self):
         #
         # Send contig files and scripts to cluster to execute command
         #
         ssh_cmd = self.get_exec_script()
         if self.server != 'enki':
-            cmd = 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
+            cmd = '#!/bin/bash\n'
+            cmd += 'scp ' + self.contigs + ' ' + self.params['servers'][self.server]['username'] + '@' + self.params['servers'][self.server]['adress']
             cmd += ':' + self.params['servers'][self.server]['scratch']
             log.debug(cmd)
             self.cmd.append(cmd)
@@ -72,6 +72,7 @@ class Blast:
         # For genouest cluster, need an additional file
         #
         ssh_cmd = ''
+        log.info("get exec")
         if self.server != 'enki':
             ssh_cmd += 'if [ -f ~/.bashrc ]; then' + "\n"
             ssh_cmd += 'source ~/.bashrc' + "\n"
@@ -99,7 +100,9 @@ class Blast:
             ssh_cmd += '/' + os.path.basename(self.genouest_cmd_file)
         else:
             if self.server == "genologin":
-                ssh_cmd += 'sbatch '
+                ssh_cmd += 'sbatch --mem=2G '
+            if self.server == "enki":
+                ssh_cmd += "#!/bin/sh\n"
             ssh_cmd += 'blast_launch.py -c ' + self.server + ' -n ' + self.num_chunk + ' --n_cpu 8 --tc ' + self.tc
             ssh_cmd += ' -d ' + self.params['servers'][self.server]['db'][self.db]
             if self.server != 'enki':

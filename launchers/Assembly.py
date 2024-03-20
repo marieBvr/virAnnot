@@ -38,7 +38,9 @@ class Assembly:
 	# Run assembly with newbler for single-end
 	def create_newbler_cmd(self):
 		if self.ising != '':
-			cmd = 'runAssembly -o ' + self.wd + '/' + self.sample + '_newbler '  + self.ising 
+			cmd = '#!/bin/bash\n'
+			cmd += '#SBATCH --mem=10G\n'
+			cmd += 'runAssembly -o ' + self.wd + '/' + self.sample + '_newbler '  + self.ising 
 			log.debug(cmd)
 			self.cmd.append(cmd)
 			cmd = 'sed -i \'s,^>contig\([0-9]*\)  length=[0-9]*   numreads=[0-9]*,>' + self.sample + '_\\1,\' ' + self.wd + '/' + self.sample + '_newbler' + '/454AllContigs.fna'
@@ -62,7 +64,11 @@ class Assembly:
 		self.i2 = self.check_fastq_format(self.i2)
 		if self.ising != '':
 			self.ising = self.check_fastq_format(self.ising)
-		cmd = 'metaspades.py' + ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' -o ' + self.wd + '/' + self.sample + '_spades'
+		merged_read = os.path.basename(self.i1).split('_')[0] + '_merged.fa'
+		cmd = '#!/bin/bash\n'
+		cmd += '#SBATCH --mem=10G\n'
+		cmd += '#SBATCH --ntasks-per-node=' + self.n_cpu + '\n'
+		cmd += 'metaspades.py' + ' -t ' + self.n_cpu + ' -1 ' + self.i1 + ' -2 ' + self.i2 + ' -o ' + self.wd + '/' + self.sample + '_spades'
 		if self.ising != '':
 			cmd += ' -s ' + self.ising
 		log.debug(cmd)
@@ -81,7 +87,8 @@ class Assembly:
 		self.i1 = self.check_fastq_format(self.i1)
 		self.i2 = self.check_fastq_format(self.i2)
 		merged_read = os.path.basename(self.i1).split('_')[0] + '_merged.fa'
-		cmd = 'fq2fa --merge ' + self.i1 + ' ' + self.i2 + ' ' + merged_read
+		cmd = '#!/bin/bash\n'
+		cmd += 'fq2fa --merge ' + self.i1 + ' ' + self.i2 + ' ' + merged_read
 		log.debug(cmd)
 		self.cmd.append(cmd)
 		if self.ising != '':

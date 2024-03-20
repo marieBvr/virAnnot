@@ -44,6 +44,8 @@ Perl external libraries
 * String::Random
 * Bio::SearchIO:blastxml
 * Bio::SeqIO
+* Expect
+* GD:Simple
 
 
 Perl included libraries
@@ -116,7 +118,7 @@ NCBI Taxonomy
  wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/dead_wgs.accession2taxid.gz ; gunzip dead_wgs.accession2taxid.gz
  cat nucl_wgs.accession2taxid nucl_gb.accession2taxid dead_wgs.accession2taxid > acc2taxid.nucl
  wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/dead_nucl.accession2taxid.gz; gunzip dead_nucl.accession2taxid.gz;
- wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_prot.dmp.gz; gunzip gi_taxid_prot.dmp.gz;
+ wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/obsolete/gi_taxid_prot.dmp.gz; gunzip gi_taxid_prot.dmp.gz;
 
 Optionally you can combine multiple accession2taxid file with a simple cat. But keep separated nucl and prot accessions as they will be loaded in two different tables.
 
@@ -124,7 +126,7 @@ Launch the loadTaxonomy.pl script that will create the sqlite database. The scri
 
 .. code-block:: bash
 
- ./loadTaxonomy.pl -struct taxonomyStructure.sql -index taxonomyIndex.sql -acc_prot acc2taxid.prot -acc_nucl acc2taxid.nucl -names names.dmp -nodes nodes.dmp -gi_prot gi_taxid_prot.dmp
+ ./loadTaxonomy.pl -struct taxonomyStructure.sql -index taxonomyIndex.sql -acc_prot acc2taxid.prot -acc_nucl acc2taxid.nucl -names names.dmp -nodes nodes.dmp -gi_prot gi_taxid_prot.dmp -acc_wgs acc2taxid.nucl
 
 
 PFAM taxonomy
@@ -140,7 +142,7 @@ Be carefull, the files you will download have a size of ~900Mo.
 
  ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/fasta.tar.gz
  tar -xzf fasta.tar.gz;
- mkdir pfam
+ mkdir fasta
  mv pfam*.FASTA fasta/
  cd pfam/
 

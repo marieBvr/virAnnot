@@ -25,24 +25,24 @@ class Diamond:
 		self._create_cmd()
 
 	def _create_cmd(self):
-
+		cmd = '#!/bin/bash\n'
 		merged_read = self.wd + '/' + os.path.basename(self.i1).split('_')[0] + '_mergedPair.fa'
 		fasta_singleton = self.wd + '/' + os.path.basename(self.ising).split('.')[0] + '.fa'
 		if not os.path.exists(merged_read):
 			if self.i1 != '' and self.i2 != '':
-				cmd = 'fq2fa --merge ' + self.i1 + ' ' + self.i2 + ' ' + merged_read
+				cmd += 'fq2fa --merge ' + self.i1 + ' ' + self.i2 + ' ' + merged_read
 				log.debug(cmd)
 				self.cmd.append(cmd)
 			if self.ising != '':
-				cmd = 'fq2fa ' + self.ising + ' ' + fasta_singleton
+				cmd += 'fq2fa ' + self.ising + ' ' + fasta_singleton
 				log.debug(cmd)
 				self.cmd.append(cmd)
 			if self.i1 != '' and self.i2 != '' and self.ising != '':
-				cmd = 'cat ' + fasta_singleton + ' >> ' + merged_read
+				cmd += 'cat ' + fasta_singleton + ' >> ' + merged_read
 				log.debug(cmd)
 				self.cmd.append(cmd)
 		# outfmt 5 = XML format
-		cmd = 'diamond blastx --outfmt 5'
+		cmd += 'diamond blastx --outfmt 5'
 		cmd += ' --db ' + str(self.db)
 		cmd += ' --out ' + self.out
 		cmd += ' --threads ' + self.n_cpu
